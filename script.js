@@ -1,64 +1,70 @@
-// This is a comment in js
-
-// Selecting an HTML element by its ID and changing its content
-document.getElementById("main-heading").innerText = "Changed Heading!";
-
-// Selecting an HTML element by its class and changing its background color
-document.querySelector(".text").style.backgroundColor = "yellow";
-
-
-// Defining a function 
-function changeHeadingText(newText) {
-    document.getElementById("main-heading").innerText = newText;
+// Function to save tasks to local storage
+function saveTasksToLocalStorage(tasks) {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
-// Calling the function
-changeHeadingText("Bookkeeping App");
+// Function to load tasks from local storage
+function loadTasksFromLocalStorage() {
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    const taskList = document.getElementById("task-list");
 
-// Function to change the heading text when called
-function handleButtonClick() {
-    document.getElementById("main-heading").innerText = "You clicked the button!";
+    tasks.forEach(function(task) {
+        const li = document.createElement("li");
+        li.textContent = task.text; // Access task.text
+
+        if (task.completed) {
+            li.classList.add('completed-task'); // Mark completed tasks visually
+        }
+
+        // Event listener to toggle the task completion status
+        li.addEventListener("click", function() {
+            li.classList.toggle('completed-task');
+            task.completed = !task.completed;
+
+            // Save updated tasks to local storage
+            saveTasksToLocalStorage(tasks);
+        });
+
+        taskList.appendChild(li);
+    });
 }
 
-// Attaching the function to the button click event
-document.getElementById("change-text-button").addEventListener("click", handleButtonClick);
+// Event listener for adding a new task
+document.getElementById("add-task-button").addEventListener("click", function() {
+    const taskInput = document.getElementById("task-input");
+    const taskList = document.getElementById("task-list");
 
-// Defining an array of transaction
-const transactions = ["Invoice 001", "Invoice 002", "Payment 001"];
+    // Create a new task object with completion status
+    const newTask = {
+        text: taskInput.value,
+        completed: false
+    };
 
-// Accessing the items in the array
-console.log(transactions[0]);
-console.log(transactions[1]);
-
-// Looping through the array and dlogging each item
-for (let i = 0; i < transactions.length; i++) {
-    console.log(transactions[i]);
-}
-
-// Selecting the body element to append new content
-const body = document.body;
-
-// Creating a list element
-const ul = document.createElement("ul");
-
-//Looping through transactions and adding them as list items
-for (let i = 0; i < transactions.length; i++) {
+    // Add the new task to the list
     const li = document.createElement("li");
-    li.innerText = transactions[i];
-    ul.appendChild(li);
-}
+    li.textContent = newTask.text;
 
-// Appending the list to the body 
-body.appendChild(ul);
+    // Event listener to toggle the task completion status
+    li.addEventListener("click", function() {
+        li.classList.toggle('completed-task');
+        newTask.completed = !newTask.completed;
 
-document.getElementById("check-input-button").addEventListener("click", function() {
-    const userInput = document.getElementById("user-input").value;
-    const messageElement = document.getElementById("input-message");
+        // Save updated tasks to local storage
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks.push(newTask);
+        saveTasksToLocalStorage(tasks);
+    });
 
-    if (userInput === "JavaScript") {
-        messageElement.textContent = "You're learning Javascript!"; 
-    } else {
-        messageElement.textContent = "Keep trying!"
-    }
-     
+    taskList.appendChild(li);
+
+    // Save the new task to local storage
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks.push(newTask);
+    saveTasksToLocalStorage(tasks);
+
+    // Clear the input field
+    taskInput.value = "";
 });
+
+// Load tasks when the page loads
+window.addEventListener('load', loadTasksFromLocalStorage);
